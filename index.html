@@ -80,10 +80,9 @@
 </head>
 <body>
 
-  <!-- Tapping anywhere on this container safely boots the built-in browser synth -->
   <div class="container" onclick="startSynthMusic()">
     <h1>Will you go on a date with me? 💖</h1>
-    <p style="color: #ff4d4d; font-size: 13px; font-weight: bold; margin-bottom: 20px;">👉 Tap anywhere inside this box to hear the music! 🎵 👈</p>
+    <p style="color: #ff4d4d; font-size: 13px; font-weight: bold; margin-bottom: 20px;">👉 Tap anywhere inside this box to hear the theme! 🎵 👈</p>
     
     <div class="date-picker">
       <p>Pick a date for our cute appointment:</p>
@@ -100,17 +99,20 @@
     let audioCtx = null;
     let isPlaying = false;
 
-    // Synthetic music loop (Bypasses links/files entirely)
     function startSynthMusic() {
       if (isPlaying) return;
       isPlaying = true;
 
-      // Initialize the browser's audio synthesizer engine
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       
-      // Sweet, upbeat love melody note frequencies
-      const melody = [329.63, 392.00, 523.25, 493.88, 392.00, 440.00, 523.25, 392.00];
-      const noteLengths = [0.3, 0.3, 0.4, 0.3, 0.3, 0.3, 0.4, 0.6];
+      // Teen Titans theme hook frequency array (E, G, A, B, D pitches)
+      const melody = [
+        329.63, 392.00, 440.00, 440.00, 392.00, 440.00, 493.88, // "When there's trouble you know who to call..."
+        493.88, 493.88, 587.33, 493.88, 440.00, 392.00, 329.63  // "TEEN TITANS!"
+      ];
+      
+      // Timing intervals for the fast punchy rhythm
+      const noteLengths = [0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.50, 0.18, 0.18, 0.28, 0.18, 0.18, 0.18, 0.80];
       let noteIndex = 0;
 
       function playNextNote() {
@@ -119,11 +121,10 @@
         let osc = audioCtx.createOscillator();
         let gainNode = audioCtx.createGain();
         
-        osc.type = 'triangle'; // Soft, cute flute/synth tone
+        osc.type = 'square'; // Changed to square wave for a punchy theme song feel
         osc.frequency.setValueAtTime(melody[noteIndex], audioCtx.currentTime);
         
-        // Smooth fading transitions so it doesn't sound harsh
-        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); // Controlled volume
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteLengths[noteIndex]);
         
         osc.connect(gainNode);
@@ -133,9 +134,11 @@
         osc.stop(audioCtx.currentTime + noteLengths[noteIndex]);
         
         let currentDuration = noteLengths[noteIndex] * 1000;
-        noteIndex = (noteIndex + 1) % melody.length; // Loop infinitely
+        noteIndex = (noteIndex + 1) % melody.length;
         
-        setTimeout(playNextNote, currentDuration + 100);
+        // Loop back with a brief pause at the end of the phrase
+        let restTime = (noteIndex === 0) ? 800 : 60; 
+        setTimeout(playNextNote, currentDuration + restTime);
       }
       
       playNextNote();
@@ -161,10 +164,10 @@
       if (chosenDate) {
         message += " Let's do it on " + chosenDate + ".";
       }
-      const myEmail = "guidry.it@outlook.com"; // Change to your real email address
+      const myEmail = "guidry.it@outlook.com"; // Remember to change to your email!
       const subject = encodeURIComponent("It's a Date! 💖");
       const body = encodeURIComponent(message);
-      window.location.href = `mailto:${myEmail}?subject=${subject}?body=${body}`;
+      window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
     }
 
     // Playful Button Logic
