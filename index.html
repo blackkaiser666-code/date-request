@@ -62,7 +62,7 @@
       border: 1px solid #ccc;
     }
 
-    /* Floating Hearts Style */
+    /* Floating Hearts */
     .heart {
       position: absolute;
       color: #ff4d4d;
@@ -73,47 +73,17 @@
       animation: floatUp 5s linear infinite;
     }
     @keyframes floatUp {
-      0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(-105vh) rotate(360deg);
-        opacity: 0;
-      }
-    }
-
-    /* Audio Toggle Button Style */
-    .music-control {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: white;
-      border: 2px solid #ff4d4d;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-105vh) rotate(360deg); opacity: 0; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Audio control toggle button -->
-  <button class="music-control" id="musicBtn" onclick="toggleMusic()">🔇</button>
-
-  <!-- Audio Element -->
-  <!-- ACTION REQUIRED: Replace the URL inside src="" with your own direct audio link (.mp3) -->
- <audio id="bgMusic" loop src="https://mixkit.co"></audio>
-
-  <div class="container" onclick="startMusicOnInteraction()">
+  <!-- Tapping anywhere on this container safely boots the built-in browser synth -->
+  <div class="container" onclick="startSynthMusic()">
     <h1>Will you go on a date with me? 💖</h1>
+    <p style="color: #ff4d4d; font-size: 13px; font-weight: bold; margin-bottom: 20px;">👉 Tap anywhere inside this box to hear the music! 🎵 👈</p>
     
     <div class="date-picker">
       <p>Pick a date for our cute appointment:</p>
@@ -127,30 +97,48 @@
   </div>
 
   <script>
-    const audio = document.getElementById('bgMusic');
-    const musicBtn = document.getElementById('musicBtn');
-    let hasInteracted = false;
+    let audioCtx = null;
+    let isPlaying = false;
 
-    // Tries to play music the very first time they click anywhere on the page
-    function startMusicOnInteraction() {
-      if (!hasInteracted) {
-        audio.play().then(() => {
-          musicBtn.innerHTML = '🔊';
-          hasInteracted = true;
-        }).catch(err => console.log("Autoplay blocked by browser. Awaiting manual unmute."));
-      }
-    }
+    // Synthetic music loop (Bypasses links/files entirely)
+    function startSynthMusic() {
+      if (isPlaying) return;
+      isPlaying = true;
 
-    // Manual mute/unmute button logic
-    function toggleMusic() {
-      if (audio.paused) {
-        audio.play();
-        musicBtn.innerHTML = '🔊';
-        hasInteracted = true;
-      } else {
-        audio.pause();
-        musicBtn.innerHTML = '🔇';
+      // Initialize the browser's audio synthesizer engine
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Sweet, upbeat love melody note frequencies
+      const melody = [329.63, 392.00, 523.25, 493.88, 392.00, 440.00, 523.25, 392.00];
+      const noteLengths = [0.3, 0.3, 0.4, 0.3, 0.3, 0.3, 0.4, 0.6];
+      let noteIndex = 0;
+
+      function playNextNote() {
+        if (!isPlaying) return;
+        
+        let osc = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+        
+        osc.type = 'triangle'; // Soft, cute flute/synth tone
+        osc.frequency.setValueAtTime(melody[noteIndex], audioCtx.currentTime);
+        
+        // Smooth fading transitions so it doesn't sound harsh
+        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteLengths[noteIndex]);
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + noteLengths[noteIndex]);
+        
+        let currentDuration = noteLengths[noteIndex] * 1000;
+        noteIndex = (noteIndex + 1) % melody.length; // Loop infinitely
+        
+        setTimeout(playNextNote, currentDuration + 100);
       }
+      
+      playNextNote();
     }
 
     // Floating Hearts Background
@@ -173,10 +161,10 @@
       if (chosenDate) {
         message += " Let's do it on " + chosenDate + ".";
       }
-      const myEmail = "guidry.it@outlook.com"; // Remember to update this!
+      const myEmail = "guidry.it@outlook.com"; // Change to your real email address
       const subject = encodeURIComponent("It's a Date! 💖");
       const body = encodeURIComponent(message);
-      window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:${myEmail}?subject=${subject}?body=${body}`;
     }
 
     // Playful Button Logic
