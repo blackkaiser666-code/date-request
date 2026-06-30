@@ -60,6 +60,7 @@
       font-size: 16px;
       border-radius: 5px;
       border: 1px solid #ccc;
+      margin: 5px;
     }
 
     /* Floating Hearts */
@@ -85,8 +86,11 @@
     <p style="color: #ff4d4d; font-size: 13px; font-weight: bold; margin-bottom: 20px;">👉 Tap anywhere inside this box to hear the theme! 🎵 👈</p>
     
     <div class="date-picker">
-      <p>Pick a date for our cute appointment:</p>
+      <p>Pick a date and time for our cute appointment:</p>
+      <!-- Date input selector -->
       <input type="date" id="dateInput">
+      <!-- Added Time input selector -->
+      <input type="time" id="timeInput">
     </div>
 
     <div>
@@ -105,13 +109,11 @@
 
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       
-      // Teen Titans theme hook frequency array (E, G, A, B, D pitches)
       const melody = [
-        329.63, 392.00, 440.00, 440.00, 392.00, 440.00, 493.88, // "When there's trouble you know who to call..."
-        493.88, 493.88, 587.33, 493.88, 440.00, 392.00, 329.63  // "TEEN TITANS!"
+        329.63, 392.00, 440.00, 440.00, 392.00, 440.00, 493.88, 
+        493.88, 493.88, 587.33, 493.88, 440.00, 392.00, 329.63  
       ];
       
-      // Timing intervals for the fast punchy rhythm
       const noteLengths = [0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.50, 0.18, 0.18, 0.28, 0.18, 0.18, 0.18, 0.80];
       let noteIndex = 0;
 
@@ -121,10 +123,10 @@
         let osc = audioCtx.createOscillator();
         let gainNode = audioCtx.createGain();
         
-        osc.type = 'square'; // Changed to square wave for a punchy theme song feel
+        osc.type = 'square'; 
         osc.frequency.setValueAtTime(melody[noteIndex], audioCtx.currentTime);
         
-        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); // Controlled volume
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); 
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteLengths[noteIndex]);
         
         osc.connect(gainNode);
@@ -136,7 +138,6 @@
         let currentDuration = noteLengths[noteIndex] * 1000;
         noteIndex = (noteIndex + 1) % melody.length;
         
-        // Loop back with a brief pause at the end of the phrase
         let restTime = (noteIndex === 0) ? 800 : 60; 
         setTimeout(playNextNote, currentDuration + restTime);
       }
@@ -160,10 +161,19 @@
     // Email Logic
     function sendEmail() {
       const chosenDate = document.getElementById('dateInput').value;
+      const chosenTime = document.getElementById('timeInput').value; // Grabs the selected time
+      
       let message = "I would love to go on a date with you!";
-      if (chosenDate) {
-        message += " Let's do it on " + chosenDate + ".";
+      
+      // Updates message structure to include date and time cleanly
+      if (chosenDate && chosenTime) {
+        message += ` Let's do it on ${chosenDate} at ${chosenTime}.`;
+      } else if (chosenDate) {
+        message += ` Let's do it on ${chosenDate}.`;
+      } else if (chosenTime) {
+        message += ` Let's do it at ${chosenTime}.`;
       }
+      
       const myEmail = "guidry.it@outlook.com"; // Remember to change to your email!
       const subject = encodeURIComponent("It's a Date! 💖");
       const body = encodeURIComponent(message);
