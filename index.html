@@ -87,9 +87,7 @@
     
     <div class="date-picker">
       <p>Pick a date and time for our cute appointment:</p>
-      <!-- Date input selector -->
       <input type="date" id="dateInput">
-      <!-- Added Time input selector -->
       <input type="time" id="timeInput">
     </div>
 
@@ -158,14 +156,37 @@
     }
     setInterval(createHeart, 300);
 
+    // 12-Hour Formatting Helper Function
+    function formatTo12Hour(timeString) {
+      if (!timeString) return null;
+      
+      // Splits the "HH:MM" format provided by the browser
+      let [hours, minutes] = timeString.split(':');
+      hours = parseInt(hours);
+      
+      // Determines AM or PM suffix
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+      // Converts hours to 12-hour basis
+      hours = hours % 12;
+      hours = hours ? hours : 12; // The hour '0' should be '12'
+      
+      // Formats double digit display for single digit hours if desired (e.g. 05:30 PM)
+      const formattedHours = hours < 10 ? '0' + hours : hours;
+      
+      return `${formattedHours}:${minutes} ${ampm}`;
+    }
+
     // Email Logic
     function sendEmail() {
       const chosenDate = document.getElementById('dateInput').value;
-      const chosenTime = document.getElementById('timeInput').value; // Grabs the selected time
+      const rawTime = document.getElementById('timeInput').value;
+      
+      // Converts time string using our script conversion tool
+      const chosenTime = formatTo12Hour(rawTime);
       
       let message = "I would love to go on a date with you!";
       
-      // Updates message structure to include date and time cleanly
       if (chosenDate && chosenTime) {
         message += ` Let's do it on ${chosenDate} at ${chosenTime}.`;
       } else if (chosenDate) {
